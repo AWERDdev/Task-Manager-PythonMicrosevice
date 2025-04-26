@@ -9,7 +9,13 @@ from Routes.PreIndexedTagsSearch import router as Pre_Indexed_Tags_Search
 from config import DEBUG_MODE
 import traceback
 import logging
+from dotenv import load_dotenv
+import os
+# Load .env file
+load_dotenv()
 
+# Now you can use the environment variables
+MONGODB_URI = os.getenv("MONGODB_URI")
 # Initialize logging
 logging.basicConfig(
     level=logging.INFO,
@@ -33,8 +39,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# MongoDB connections
-connect('TaskMasterPublic', host='mongodb://127.0.0.1:27017/')
+connect(
+    db="TaskMasterPublic", 
+    host=MONGODB_URI,
+    alias="default"
+)
+
 # connect('TaskMaster', host='mongodb://127.0.0.1:27017/')
 
 # MongoEngine Task model
