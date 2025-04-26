@@ -1,0 +1,6 @@
+name: my-python-api
+
+engine: python
+version: 3.10
+
+entrypoint: python app.py
