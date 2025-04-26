@@ -3,39 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from mongoengine import connect
+from mongoengine import connect, Document, StringField
 from Routes.LinkedLists import router as linked_lists_router
-from mongoengine import Document, StringField
 from Routes.PreIndexedTagsSearch import router as Pre_Indexed_Tags_Search
+from config import DEBUG_MODE
 import traceback
 import logging
-from config import DEBUG_MODE
 
-# Initialize FastAPI app
-app = FastAPI(debug=DEBUG_MODE)
-
-# In your exception handlers
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    error_detail = {
-        "error": str(exc),
-    }
-    
-    # Only include traceback in debug mode
-    if DEBUG_MODE:
-        error_detail["traceback"] = traceback.format_exc()
-        error_detail["type"] = type(exc).__name__
-    
-    logger.error(f"Unhandled exception: {traceback.format_exc()}")
-    return JSONResponse(
-        status_code=500,
-        content={
-            "message": "Internal server error",
-            "detail": error_detail if DEBUG_MODE else None,
-        }
-    )
-
-# Configure logging
+# Initialize logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -46,18 +21,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Connect to MongoDB using mongoengine
-connect('TaskMaster', host='mongodb://127.0.0.1:27017/')
-
-# Define a MongoEngine model for the Task (ensure consistency with your schema)
-class Task(Document):
-    userId = StringField(required=True)  # userId field (make sure it's the same in MongoDB)
-    taskName = StringField()
-    description = StringField()
-    meta = {'collection': 'tasks'}  # Ensure it uses the 'tasks' collection
-
-# Initialize FastAPI app with debug mode enabled
-app = FastAPI(debug=True)
+# Initialize FastAPI app
+app = FastAPI(debug=DEBUG_MODE)
 
 # Enable CORS
 app.add_middleware(
@@ -68,24 +33,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Custom exception handler for unhandled exceptions
+# MongoDB connections
+connect('TaskMasterPublic', host='mongodb://127.0.0.1:27017/')
+# connect('TaskMaster', host='mongodb://127.0.0.1:27017/')
+
+# MongoEngine Task model
+class Task(Document):
+    userId = StringField(required=True)
+    taskName = StringField()
+    description = StringField()
+    meta = {'collection': 'tasks'}
+
+# Global exception handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     error_detail = {
         "error": str(exc),
-        "type": type(exc).__name__,
-        "traceback": traceback.format_exc()
     }
-    logger.error(f"Unhandled exception: {error_detail}")
+    if DEBUG_MODE:
+        error_detail["traceback"] = traceback.format_exc()
+        error_detail["type"] = type(exc).__name__
+    logger.error(f"Unhandled exception: {traceback.format_exc()}")
     return JSONResponse(
         status_code=500,
         content={
             "message": "Internal server error",
-            "detail": error_detail,
+            "detail": error_detail if DEBUG_MODE else None,
         }
     )
 
-# Custom exception handler for HTTP exceptions
+# HTTP exception handler
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     logger.error(f"HTTP exception: {exc.detail}, status_code: {exc.status_code}")
@@ -97,7 +74,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         }
     )
 
-# Custom exception handler for validation errors
+# Validation error handler
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     error_details = exc.errors()
@@ -110,7 +87,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         }
     )
 
-# Middleware to log all requests
+# Request logging middleware
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     logger.info(f"Request: {request.method} {request.url}")
@@ -122,16 +99,16 @@ async def log_requests(request: Request, call_next):
         logger.error(f"Request failed: {str(e)}")
         raise
 
-# Register routers correctly
+# Register routers
 app.include_router(linked_lists_router, prefix="/api")
 app.include_router(Pre_Indexed_Tags_Search, prefix="/api")
 
+# Home route
 @app.get("/")
 def home():
     return {"message": "Hello, FastAPI!"}
 
-# Add a test endpoint to check error handling
+# Test error route
 @app.get("/test-error")
 def test_error():
-    # This will trigger our custom error handler
     raise ValueError("This is a test error to check error handling")
