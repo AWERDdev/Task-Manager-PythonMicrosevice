@@ -392,3 +392,21 @@
 2025-04-19 20:19:25,299 - index - INFO - Response status: 200
 2025-04-19 20:19:25,300 - index - INFO - Response status: 200
 2025-04-19 20:19:25,300 - index - INFO - Response status: 200
+2025-04-26 13:47:37,038 - index - INFO - Request: GET http://127.0.0.1:8000 /
+2025-04-26 13:47:37,041 - index - INFO - Response status: 200
+2025-04-26 13:48:40,360 - index - INFO - Request: GET http://127.0.0.1:8000/
+2025-04-26 13:48:40,362 - index - INFO - Response status: 200
+2025-04-26 13:48:45,476 - index - INFO - Request: GET http://127.0.0.1:8000/
+2025-04-26 13:48:45,477 - index - INFO - Response status: 200
+2025-04-26 13:48:48,193 - index - INFO - Request: GET http://127.0.0.1:8000/
+2025-04-26 13:48:48,194 - index - INFO - Response status: 200
+2025-04-26 13:48:49,083 - index - INFO - Request: GET http://127.0.0.1:8000/
+2025-04-26 13:48:49,084 - index - INFO - Response status: 200
+2025-04-26 13:48:49,793 - index - INFO - Request: GET http://127.0.0.1:8000/
+2025-04-26 13:48:49,794 - index - INFO - Response status: 200
+2025-04-26 13:49:13,338 - index - INFO - Request: POST http://127.0.0.1:8000/build-index
+2025-04-26 13:49:13,339 - index - ERROR - HTTP exception: Not Found, status_code: 404
+2025-04-26 13:49:13,339 - index - INFO - Response status: 404
+2025-04-26 13:49:22,443 - index - INFO - Request: POST http://127.0.0.1:8000/api/build-index
+2025-04-26 13:49:22,444 - index - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None}]
+2025-04-26 13:49:22,444 - index - INFO - Response status: 422
